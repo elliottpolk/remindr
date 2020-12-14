@@ -1,6 +1,6 @@
 BIN=remindr
 PKG=github.com/elliottpolk/remindr
-CLI_VERSION=`cat .version`
+VERSION=`cat .version`
 GOOS?=linux
 BUILD_DIR=./build/bin
 
@@ -26,8 +26,8 @@ unit-test: ; $(info $(M) running unit tests...)                     @ ## run the
 .PHONY: build
 build: build-dir; $(info $(M) building ...)                         @ ## build the binary
 	@GOOS=$(GOOS) go build \
-		-ldflags "-X main.version=$(CLI_VERSION) -X main.compiled=$(date +%s)" \
-		-o ./build/bin/$(BIN) ./main.go
+		-ldflags "-X main.version=$(VERSION) -X main.compiled=$(date +%s)" \
+		-o ./build/bin/$(BIN) ./
 
 .PHONY: package
 package: ; $(info $(M) packaging ...)                               @ ## package up the binary for distribution to Artifactory or PCF
