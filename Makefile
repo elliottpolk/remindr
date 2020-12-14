@@ -29,7 +29,30 @@ build: build-dir; $(info $(M) building ...)                         @ ## build t
 		-ldflags "-X main.version=$(CLI_VERSION) -X main.compiled=$(date +%s)" \
 		-o ./build/bin/$(BIN) ./main.go
 
-.PHONEY: build-dir
+.PHONY: package
+package: ; $(info $(M) packaging ...)                               @ ## package up the binary for distribution to Artifactory or PCF
+ifeq ($(PACKAGER),zip)
+	@cd ./build/bin/ && zip $(BIN).zip $(shell ls -A ./build/bin) && rm $(BIN) && cd -
+else
+	@cd ./build/bin/ && tar zcvf $(BIN).tar.gz $(shell ls -A ./build/bin) && rm $(BIN) && cd -
+endif
+
+.PHONY: distro
+distro: ;                                          					@ ## build and package in a distro dir for each OS
+	@printf "\033[34;1m◉\033[0m cleaning up ...\n" \
+		&& rm -vrf dist; mkdir dist
+	@printf "\033[34;1m◉\033[0m building for Linux ...\n" \
+		&& GOOS=linux $(MAKE) clean build package \
+		&& mv ./build/bin/$(BIN).tar.gz dist/$(BIN)-v$(VERSION).linux.tar.gz
+	@printf "\033[34;1m◉\033[0m building for macOS ...\n" \
+		&& GOOS=darwin $(MAKE) clean build package \
+		&& mv ./build/bin/$(BIN).tar.gz dist/$(BIN)-v$(VERSION).macos.tar.gz
+	@printf "\033[34;1m◉\033[0m building for Windows ...\n" \
+		&& GOOS=windows $(MAKE) clean build package \
+		&& mv ./build/bin/$(BIN).tar.gz dist/$(BIN)-v$(VERSION).windows.tar.gz
+	@$(MAKE) clean
+
+.PHONY: build-dir
 build-dir: ;
 	@[ ! -d "${BUILD_DIR}" ] && mkdir -vp "${BUILD_DIR}" || true
 
